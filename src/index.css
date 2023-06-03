@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@100;200;300;400;500;600;700;800&family=Roboto:wght@100;300;400;500;700&display=swap');
+
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	background-color: hsla(1, 18%, 91%, 1);
+	background-image: radial-gradient(
+			at 16% 95%,
+			hsla(135, 8%, 95%, 1) 0px,
+			transparent 50%
+		),
+		radial-gradient(at 56% 29%, hsla(45, 20%, 85%, 1) 0px, transparent 50%),
+		radial-gradient(at 2% 50%, hsla(213, 54%, 87%, 1) 0px, transparent 50%),
+		radial-gradient(at 30% 67%, hsla(198, 28%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 8% 63%, hsla(240, 52%, 86%, 1) 0px, transparent 50%),
+		radial-gradient(at 53% 93%, hsla(282, 38%, 87%, 1) 0px, transparent 50%);
+}
