@@ -386,16 +386,25 @@ const Form = () => {
 	);
 
 	const submitForm = (data) => {
+		console.log(data?.applicant[0]);
 		window.localStorage.setItem('applicationData', JSON.stringify(data));
 
 		const formData = JSON.stringify({
 			method: 'REQUEST_PAYMENT',
 			api_key: 'd37e4e08a0fc40b39abf5ce36a8d70c75fe05b83',
 			user: 'mobile',
-			firstname: data?.applicant[0]?.first_name,
-			surname: data?.applicant[0]?.last_name,
-			contact_number: data?.applicant[0]?.telephone,
-			email: data?.applicant[0]?.email,
+			firstname: data?.applicant[0]?.first_name
+				? data?.applicant[0]?.first_name
+				: data?.applicant[0]?.company_name,
+			surname: data?.applicant[0]?.last_name
+				? data?.applicant[0]?.last_name
+				: data?.applicant[0]?.company_address,
+			contact_number: data?.applicant[0]?.telephone
+				? data?.applicant[0]?.telephone
+				: data?.applicant[0]?.company_telephone,
+			email: data?.applicant[0]?.email
+				? data?.applicant[0]?.email
+				: data?.applicant[0]?.company_email,
 			amount: paymentAmount,
 			request_id: Math.random().toString(36).substring(2, 12),
 			redirect_url: 'https://travel-health-insurance.netlify.app/e-card',
