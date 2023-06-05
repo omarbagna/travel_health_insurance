@@ -917,7 +917,7 @@ const Form = () => {
 								</section>
 
 								<section className="flex flex-col gap-10 mt-20">
-									<span className="flex flex-wrap md:flex-nowrap justify-between items-center gap-2 md:gap-36">
+									<span className="flex flex-wrap xl:flex-nowrap justify-between items-center gap-2 xl:gap-20">
 										<Typography
 											variant="h2"
 											className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
@@ -937,7 +937,7 @@ const Form = () => {
 															setApplicantType(value.target.value);
 														}}
 														name="applicant_type">
-														<List className="flex-row px-0 shadow-inner rounded-lg w-full">
+														<List className="flex-row flex-wrap lg:flex-nowrap px-0 shadow-inner rounded-lg w-full">
 															<ListItem className="p-0">
 																<label
 																	htmlFor="self"
@@ -1208,7 +1208,7 @@ const Form = () => {
 
 						{formStep === 2 && (
 							<section className="flex flex-col gap-10">
-								<div className="w-full flex justify-between items-center">
+								<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
 									<Typography
 										variant="h2"
 										className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">

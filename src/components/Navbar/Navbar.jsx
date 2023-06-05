@@ -20,14 +20,16 @@ export default function NavBar() {
 
 	return (
 		<>
-			<Navbar className="sticky inset-0 z-10 h-max max-w-full rounded-none py-2 px-4 lg:px-8 lg:py-4">
+			<Navbar className="sticky inset-0 z-50 h-max max-w-full rounded-none py-2 px-4 lg:px-8 lg:py-4">
 				<div className="flex items-center justify-between">
 					<Typography
 						as="a"
 						href="/"
-						className="flex justify-start items-center gap-2 mr-4 cursor-pointer text-base py-1.5 font-semibold w-44 border-r-2 text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
+						className="flex justify-start items-center gap-2 mr-4 cursor-pointer text-base py-1.5 pr-1.5 font-semibold w-fit border-r-2 text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
 						<BsGlobeEuropeAfrica className="text-green-600 text-4xl shrink-0 " />
-						Lagos Travel Health Insurance
+						<span className="w-32 hidden lg:block">
+							Lagos Travel Health Insurance
+						</span>
 					</Typography>
 					<div className="flex items-center gap-4">
 						<Button variant="text" size="lg" className="hidden lg:inline-block">

@@ -30,7 +30,7 @@ const Form = () => {
 
 	return (
 		<div className="w-full h-full flex flex-col justify-center items-center mt-20 z-20">
-			<div className="w-2/3 rounded-lg shadow-2xl bg-white/80 backdrop-blur-sm mx-auto">
+			<div className="w-5/6 lg:w-2/3 rounded-lg shadow-2xl bg-white/80 backdrop-blur-sm mx-auto">
 				<div className="px-8 py-10">
 					<form onSubmit={handleSubmit(submitForm)}>
 						<section className="w-full flex flex-col gap-10">
