@@ -7,6 +7,7 @@ module.exports = withMT({
 			fontFamily: {
 				title: ['Prompt', 'sans-serif'],
 				body: ['Roboto', 'sans-serif'],
+				card: ['Audiowide', 'cursive'],
 			},
 		},
 	},

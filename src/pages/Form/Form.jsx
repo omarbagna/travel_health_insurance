@@ -170,6 +170,7 @@ const Form = () => {
 	const [applicantType, setApplicantType] = useState('other');
 	//const [cardNumber, setCardNumber] = useState('');
 	const [basicData, setBasicData] = useState(null);
+	const [paymentAmount, setPaymentAmount] = useState(0);
 	const [open, setOpen] = useState(1);
 
 	useEffect(() => {
@@ -251,6 +252,26 @@ const Form = () => {
 			});
 		}
 	}, [reset, basicData]);
+
+	useEffect(() => {
+		if (basicData) {
+			if (
+				differenceInDays(
+					new Date(basicData.end_date),
+					new Date(basicData.start_date)
+				) <= '30'
+			) {
+				setPaymentAmount(45 * watch('insured_person').length);
+			} else if (
+				differenceInDays(
+					new Date(basicData.end_date),
+					new Date(basicData.start_date)
+				) > '30'
+			) {
+				setPaymentAmount(80 * watch('insured_person').length);
+			}
+		}
+	}, [watch, basicData]);
 
 	const renderButton = () => {
 		if (formStep > 2) {
@@ -365,18 +386,20 @@ const Form = () => {
 	);
 
 	const submitForm = (data) => {
+		window.localStorage.setItem('applicationData', JSON.stringify(data));
+
 		const formData = JSON.stringify({
 			method: 'REQUEST_PAYMENT',
 			api_key: 'd37e4e08a0fc40b39abf5ce36a8d70c75fe05b83',
 			user: 'mobile',
-			firstname: 'Life',
-			surname: 'Droid',
-			contact_number: '0247159599',
-			email: 'ekdedume@gmail.com',
-			amount: '5',
+			firstname: data?.applicant[0]?.first_name,
+			surname: data?.applicant[0]?.last_name,
+			contact_number: data?.applicant[0]?.telephone,
+			email: data?.applicant[0]?.email,
+			amount: paymentAmount,
 			request_id: Math.random().toString(36).substring(2, 12),
-			redirect_url: 'https://travel-health-insurance.netlify.app/',
-			callback_url: 'https://travel-health-insurance.netlify.app/e-card',
+			redirect_url: 'https://travel-health-insurance.netlify.app/e-card',
+			callback_url: 'https://travel-health-insurance.netlify.app/',
 		});
 
 		makePayment.mutate(formData);
@@ -402,11 +425,15 @@ const Form = () => {
 									<section className="flex flex-col gap-10">
 										<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
 											<span className="">
-												<Typography
-													variant="h2"
-													className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-													Insured Person
-												</Typography>
+												<span className="w-fit relative flex justify-start items-end gap-1">
+													<Typography
+														variant="h2"
+														className="font-title font-medium text-4xl text-gray-900 flex justify-center items-end gap-1">
+														Insured Person
+													</Typography>
+													<div className="w-2 h-2 mb-3 bg-blue-400 rounded-sm" />
+													<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+												</span>
 												<Typography
 													variant="paragraph"
 													className="text-sm text-gray-500">
@@ -1004,11 +1031,15 @@ const Form = () => {
 
 									<section className="flex flex-col gap-10 mt-20">
 										<span className="flex flex-wrap xl:flex-nowrap justify-between items-center gap-2 xl:gap-20">
-											<Typography
-												variant="h2"
-												className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-												Applicant
-											</Typography>
+											<span className="w-fit relative flex justify-start items-end gap-1">
+												<Typography
+													variant="h2"
+													className="font-title font-medium text-4xl text-gray-900 flex justify-center items-end gap-1">
+													Applicant
+												</Typography>
+												<div className="w-2 h-2 mb-3 bg-blue-400 rounded-sm" />
+												<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+											</span>
 											<div className="w-full">
 												<Controller
 													name="applicant_type"
@@ -1295,11 +1326,15 @@ const Form = () => {
 							{formStep === 2 && (
 								<section className="flex flex-col gap-10">
 									<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
-										<Typography
-											variant="h2"
-											className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-											Review and Accept Terms
-										</Typography>
+										<span className="w-fit relative flex justify-start items-end gap-1">
+											<Typography
+												variant="h2"
+												className="font-title font-medium text-4xl text-gray-900 flex justify-center items-end gap-1">
+												Review and Accept Terms
+											</Typography>
+											<div className="w-2 h-2 mb-3 bg-blue-400 rounded-sm" />
+											<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+										</span>
 
 										<div className="w-fit flex justify-center items-center gap-5 p-3 rounded-md shadow-md">
 											<div className="flex flex-col justify-center items-start gap-2">
@@ -1332,9 +1367,15 @@ const Form = () => {
 
 									<div className="flex flex-col gap-8">
 										<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
-											<Typography variant="h4" className="text-blue-400">
-												Insured Person Details
-											</Typography>
+											<span className="w-fit relative flex justify-start items-end gap-1">
+												<Typography
+													variant="h4"
+													className="font-title font-medium text-2xl text-gray-900 flex justify-center items-end gap-1">
+													Insured Person Details
+												</Typography>
+												<div className="w-2 h-2 mb-2 bg-blue-400 rounded-sm" />
+												<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+											</span>
 
 											{watch(`insured_person`).map((person, index) => (
 												<Accordion
@@ -1377,9 +1418,15 @@ const Form = () => {
 										</div>
 
 										<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
-											<Typography variant="h4" className="text-blue-300">
-												Applicant Details
-											</Typography>
+											<span className="w-fit relative flex justify-center items-end gap-1">
+												<Typography
+													variant="h4"
+													className="font-title font-medium text-2xl text-gray-900 flex justify-center items-end gap-1">
+													Applicant Details
+												</Typography>
+												<div className="w-2 h-2 mb-2 bg-blue-400 rounded-sm" />
+												<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+											</span>
 											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
 												{REVIEW_DATA.map(({ name, key }, index) => (
 													<div
@@ -1471,19 +1518,31 @@ const Form = () => {
 												new Date(basicData.end_date),
 												new Date(basicData.start_date)
 											) <= '30' ? (
-												<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-													{Intl.NumberFormat('en-US', {
-														style: 'currency',
-														currency: 'USD',
-													}).format(45 * watch('insured_person').length)}
-												</Typography>
+												<span className="relative flex justify-center items-end gap-1">
+													<Typography
+														variant="h2"
+														className="font-title font-medium text-xl text-gray-900 flex justify-center items-end gap-1">
+														{Intl.NumberFormat('en-US', {
+															style: 'currency',
+															currency: 'USD',
+														}).format(45 * watch('insured_person').length)}
+													</Typography>
+													<div className="w-2 h-2 mb-2 bg-blue-400 rounded-sm" />
+													<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+												</span>
 											) : (
-												<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-													{Intl.NumberFormat('en-US', {
-														style: 'currency',
-														currency: 'USD',
-													}).format(80 * watch('insured_person').length)}
-												</Typography>
+												<span className="relative flex justify-center items-end gap-1">
+													<Typography
+														variant="h2"
+														className="font-title font-medium text-xl text-gray-900 flex justify-center items-end gap-1">
+														{Intl.NumberFormat('en-US', {
+															style: 'currency',
+															currency: 'USD',
+														}).format(80 * watch('insured_person').length)}
+													</Typography>
+													<div className="w-2 h-2 mb-2 bg-blue-400 rounded-sm" />
+													<div className="absolute bottom-0 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+												</span>
 											)}
 										</div>
 									</div>

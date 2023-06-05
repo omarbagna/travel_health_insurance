@@ -34,12 +34,15 @@ const Form = () => {
 				<div className="px-8 py-10">
 					<form onSubmit={handleSubmit(submitForm)}>
 						<section className="w-full flex flex-col gap-10">
-							<Typography
-								variant="h2"
-								className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-								{' '}
-								Get insured today!
-							</Typography>
+							<span className="w-fit relative flex justify-start items-end gap-1">
+								<Typography
+									variant="h4"
+									className="font-title font-medium text-2xl text-gray-900 flex justify-center items-end gap-1">
+									Get insured today!
+								</Typography>
+								<div className="w-2 h-2 mb-2 bg-blue-400 rounded-sm" />
+								<div className="absolute -bottom-2 left-0 w-2/3 h-1 bg-blue-400 rounded-sm" />
+							</span>
 							<div className="flex flex-col justify-start items-start gap-2">
 								<div className="w-full flex flex-wrap md:flex-nowrap justify-center items-center gap-4">
 									<Controller

@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { Form, Home } from './pages';
+import { Ecard, Form, Home } from './pages';
 import NavBar from './components/Navbar/Navbar';
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
 			<Routes location={location} key={location.pathname}>
 				<Route path="/" element={<Home />} />
 				<Route path="/application" element={<Form />} />
+				<Route path="/e-card" element={<Ecard />} />
 			</Routes>
 		</div>
 	);
