@@ -5,13 +5,18 @@ import './index.css';
 
 import { ThemeProvider } from '@material-tailwind/react';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-	<React.StrictMode>
+	<QueryClientProvider client={queryClient}>
 		<BrowserRouter>
 			<ThemeProvider>
 				<App />
 			</ThemeProvider>
 		</BrowserRouter>
-	</React.StrictMode>
+		<ReactQueryDevtools initialIsOpen={false} position="bottom-left" />
+	</QueryClientProvider>
 );

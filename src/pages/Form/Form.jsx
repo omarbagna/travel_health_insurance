@@ -14,14 +14,20 @@ import {
 	ListItem,
 	ListItemPrefix,
 	Radio,
+	Spinner,
 	Typography,
 } from '@material-tailwind/react';
 import { FormControl, FormControlLabel, FormHelperText } from '@mui/material';
-import { BiCreditCardFront, BiTime } from 'react-icons/bi';
+import {
+	//BiCreditCardFront,
+	BiTime,
+} from 'react-icons/bi';
 import { BsGlobeEuropeAfrica } from 'react-icons/bs';
-import { RiSecurePaymentLine } from 'react-icons/ri';
+//import { RiSecurePaymentLine } from 'react-icons/ri';
+import axios from 'axios';
+import { useMutation } from 'react-query';
 
-const MAX_STEPS = 3;
+const MAX_STEPS = 2;
 
 const REVIEW_DATA = [
 	{
@@ -124,6 +130,7 @@ const REVIEW_DATA = [
 	},
 ];
 
+/*
 function formatCardNumber(value) {
 	const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
 	const matches = val.match(/\d{4,16}/g);
@@ -140,6 +147,7 @@ function formatCardNumber(value) {
 		return value;
 	}
 }
+*/
 
 function Icon({ id, open }) {
 	return (
@@ -160,7 +168,7 @@ function Icon({ id, open }) {
 const Form = () => {
 	const [formStep, setFormStep] = useState(1);
 	const [applicantType, setApplicantType] = useState('other');
-	const [cardNumber, setCardNumber] = useState('');
+	//const [cardNumber, setCardNumber] = useState('');
 	const [basicData, setBasicData] = useState(null);
 	const [open, setOpen] = useState(1);
 
@@ -245,9 +253,9 @@ const Form = () => {
 	}, [reset, basicData]);
 
 	const renderButton = () => {
-		if (formStep > 3) {
+		if (formStep > 2) {
 			return null;
-		} else if (formStep === 3) {
+		} /* else if (formStep === 3) {
 			return (
 				<div className="w-full flex flex-col gap-1 justify-center items-center mt-8">
 					<Button type="submit" size="lg" className="w-full">
@@ -262,7 +270,7 @@ const Form = () => {
 					</Typography>
 				</div>
 			);
-		} else if (formStep === 2) {
+		} */ else if (formStep === 2) {
 			return (
 				<div className="w-full flex justify-center items-center gap-5 mt-8">
 					<Button
@@ -278,8 +286,8 @@ const Form = () => {
 						size="lg"
 						className="w-full"
 						disabled={!isValid}
-						onClick={goToNext}
-						type="button">
+						//onClick={goToNext}
+						type="submit">
 						{' '}
 						Proceed to Payment
 					</Button>
@@ -329,38 +337,970 @@ const Form = () => {
 		unmount: { scale: 0.9 },
 	};
 
+	const paymentRequest = async (data) => {
+		const { data: response } = await axios.post(
+			'https://lab.rxhealthbeta.com/jimmy/ng-pay/checkout.php',
+			data,
+			{
+				headers: { 'Content-Type': 'application/json' },
+				//withCredentials: true,
+			}
+		);
+		return response;
+	};
+
+	const makePayment = useMutation(
+		(paymentData) => paymentRequest(paymentData),
+		{
+			onSuccess: (data) => {
+				console.log('Success response ', data);
+				if (data?.resp_code === '000') {
+					window.location.replace(data.redirect_url);
+				}
+			},
+			onError: (error) => {
+				console.log(error);
+			},
+		}
+	);
+
 	const submitForm = (data) => {
-		window.alert(JSON.stringify(data, null, 2));
-		goToNext();
+		const formData = JSON.stringify({
+			method: 'REQUEST_PAYMENT',
+			api_key: 'd37e4e08a0fc40b39abf5ce36a8d70c75fe05b83',
+			user: 'mobile',
+			firstname: 'Life',
+			surname: 'Droid',
+			contact_number: '0247159599',
+			email: 'ekdedume@gmail.com',
+			amount: '5',
+			request_id: Math.random().toString(36).substring(2, 12),
+			redirect_url: 'https://travel-health-insurance.netlify.app/',
+			callback_url: 'https://travel-health-insurance.netlify.app/e-card',
+		});
+
+		makePayment.mutate(formData);
+
+		console.log(JSON.stringify(data, null, 2));
+		//goToNext();
 	};
 
 	return (
 		<div className="w-full h-full flex flex-col justify-start items-center mt-20">
 			<div className="w-5/6 md:w-2/3 rounded-lg shadow-2xl bg-white/60 backdrop-blur-md mx-auto">
 				<div className="px-8 py-10">
-					<form onSubmit={handleSubmit(submitForm)}>
-						{formStep < MAX_STEPS && (
-							<p>
-								Step {formStep} of {MAX_STEPS}
-							</p>
-						)}
+					{!makePayment.isLoading ? (
+						<form onSubmit={handleSubmit(submitForm)}>
+							{formStep < MAX_STEPS && (
+								<p>
+									Step {formStep} of {MAX_STEPS}
+								</p>
+							)}
 
-						{formStep === 1 && (
-							<>
-								<section className="flex flex-col gap-10">
-									<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
-										<span className="">
+							{formStep === 1 && (
+								<>
+									<section className="flex flex-col gap-10">
+										<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
+											<span className="">
+												<Typography
+													variant="h2"
+													className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
+													Insured Person
+												</Typography>
+												<Typography
+													variant="paragraph"
+													className="text-sm text-gray-500">
+													You can add up to 5 people
+												</Typography>
+											</span>
+											<div className="w-fit flex justify-center items-center gap-5 p-3 rounded-md shadow-md">
+												<div className="flex flex-col justify-center items-start gap-2">
+													<span className="flex justify-start items-center gap-1">
+														<BiTime className="text-lg text-gray-700" />
+														<Typography className="capitalize font-normal text-xs text-gray-700 border-b-2 border-blue-400">
+															Duration
+														</Typography>
+													</span>
+													<Typography>
+														{basicData &&
+															differenceInDays(
+																new Date(basicData.end_date),
+																new Date(basicData.start_date)
+															)}{' '}
+														Days
+													</Typography>
+												</div>
+												<div className="flex flex-col justify-center items-start gap-2">
+													<span className="flex justify-start items-center gap-1">
+														<BsGlobeEuropeAfrica className="text-lg text-gray-700" />
+														<Typography className="capitalize font-normal text-xs text-gray-700 border-b-2 border-blue-400">
+															Country of Residence
+														</Typography>
+													</span>
+													<Typography>{watch('country')} </Typography>
+												</div>
+											</div>
+										</div>
+										{fields.map((inputField, index) => (
+											<div
+												key={inputField.id}
+												className="relative w-full h-full flex flex-col gap-5 justify-center items-center rounded-md shadow-inner border-2-lg bg-gray-50/10 p-4 py-10">
+												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
+													<Typography
+														variant="h4"
+														className="w-full text-left font-title font-medium text-xl text-blue-400">
+														Personal Information
+													</Typography>
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+														<Controller
+															name={`insured_person[${index}].first_name`}
+															control={control}
+															defaultValue={''}
+															rules={{ required: 'Please enter first name' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="First Name"
+																	type="text"
+																	required
+																/>
+															)}
+														/>
+														<Controller
+															name={`insured_person[${index}].last_name`}
+															control={control}
+															defaultValue={''}
+															rules={{ required: 'Please enter last name' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Last Name"
+																	type="text"
+																	required
+																/>
+															)}
+														/>
+													</div>
+
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+														<Controller
+															name={`insured_person[${index}].dob`}
+															control={control}
+															defaultValue={''}
+															rules={{
+																required: 'Please specify date of birth',
+															}}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Date of Birth"
+																	max={format(new Date(), 'yyyy-MM-dd')}
+																	type="date"
+																	required
+																/>
+															)}
+														/>
+
+														<Controller
+															control={control}
+															name={`insured_person[${index}].country`}
+															defaultValue={watch('country')}
+															rules={{ required: 'Please select country' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<SelectInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Country of Residence *"
+																	options={countries}
+																	required
+																/>
+															)}
+														/>
+													</div>
+
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+														<Controller
+															name={`insured_person[${index}].passport_number`}
+															control={control}
+															defaultValue={''}
+															rules={{
+																required: 'Please enter passport number',
+															}}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Passport Number"
+																	type="text"
+																	required
+																/>
+															)}
+														/>
+													</div>
+												</div>
+												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
+													<Typography
+														variant="h4"
+														className="w-full text-left font-title font-medium text-xl text-blue-400">
+														Contact Information
+													</Typography>
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+														<Controller
+															name={`insured_person[${index}].email`}
+															control={control}
+															defaultValue={''}
+															rules={{ required: 'Please enter email' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Email"
+																	type="email"
+																	required
+																/>
+															)}
+														/>
+														<Controller
+															name={`insured_person[${index}].telephone`}
+															control={control}
+															rules={{
+																required: 'Please enter telephone number',
+															}}
+															defaultValue={''}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Phone Number"
+																	type="tel"
+																	required
+																/>
+															)}
+														/>
+													</div>
+
+													<Controller
+														name={`insured_person[${index}].address`}
+														control={control}
+														defaultValue={''}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Address in Home Country"
+																type="text"
+															/>
+														)}
+													/>
+
+													<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-red-100/30">
+														<Typography
+															variant="h4"
+															className="w-full text-left text-lg ">
+															<mark className="p-2 font-title font-medium rounded-md bg-red-300 text-white">
+																Emergency Contact Information
+															</mark>
+														</Typography>
+														<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+															<Controller
+																name={`insured_person[${index}].emergency_contact_first_name`}
+																control={control}
+																defaultValue={''}
+																rules={{ required: 'Please enter first name' }}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<DefaultInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="First Name"
+																		type="text"
+																		required
+																	/>
+																)}
+															/>
+															<Controller
+																name={`insured_person[${index}].emergency_contact_last_name`}
+																control={control}
+																defaultValue={''}
+																rules={{ required: 'Please enter last name' }}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<DefaultInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="Last Name"
+																		type="text"
+																		required
+																	/>
+																)}
+															/>
+														</div>
+
+														<Controller
+															name={`insured_person[${index}].emergency_contact_address`}
+															control={control}
+															defaultValue={''}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Address"
+																	type="text"
+																/>
+															)}
+														/>
+
+														<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+															<Controller
+																control={control}
+																name={`insured_person[${index}].emergency_contact_country`}
+																defaultValue={watch('country')}
+																rules={{ required: 'Please select country' }}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<SelectInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="Country"
+																		options={countries}
+																		required
+																	/>
+																)}
+															/>
+
+															<Controller
+																name={`insured_person[${index}].emergency_contact_telephone`}
+																control={control}
+																defaultValue={''}
+																rules={{
+																	required: 'Please enter phone number',
+																}}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<DefaultInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="Phone Number"
+																		type="tel"
+																		required
+																	/>
+																)}
+															/>
+														</div>
+													</div>
+												</div>
+												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
+													<Typography
+														variant="h4"
+														className="w-full text-left font-title font-medium text-xl text-blue-400">
+														Travel Information
+													</Typography>
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+														<Controller
+															name={`insured_person[${index}].arrival_date`}
+															control={control}
+															defaultValue={watch('start_date')}
+															//rules={{ required: 'Date is required.' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Arrival date in Nigeria"
+																	type="date"
+																	labelProps={{ style: { color: '#617D8B' } }}
+																	disabled
+																	//required
+																/>
+															)}
+														/>
+														<Controller
+															name={`insured_person[${index}].departure_date`}
+															control={control}
+															defaultValue={watch('end_date')}
+															//rules={{ required: 'Date is required.' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Departure date from Nigeria"
+																	type="date"
+																	/*
+																min={watch(
+																	`insured_person[${index}].arrival_date`
+																)}
+																max={format(
+																	add(
+																		new Date(
+																			watch(
+																				`insured_person[${index}].arrival_date`
+																			)
+																		),
+																		{
+																			days: 90,
+																		}
+																	),
+																	'yyyy-MM-dd'
+																)}
+																*/
+																	labelProps={{ style: { color: '#617D8B' } }}
+																	disabled
+																	//required
+																/>
+															)}
+														/>
+													</div>
+
+													<Controller
+														name={`insured_person[${index}].address_nigeria`}
+														control={control}
+														defaultValue={''}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Address in Nigeria"
+																type="text"
+															/>
+														)}
+													/>
+
+													<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-red-100/30">
+														<Typography
+															variant="h4"
+															className="w-full text-left text-lg ">
+															<mark className="p-2 font-title font-medium rounded-md bg-red-300 text-white">
+																Emergency Contact in Nigeria
+															</mark>
+														</Typography>
+														<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+															<Controller
+																name={`insured_person[${index}].emergency_contact_nigeria_first_name`}
+																control={control}
+																defaultValue={''}
+																rules={{ required: 'Please enter first name' }}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<DefaultInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="First Name"
+																		type="text"
+																		required
+																	/>
+																)}
+															/>
+															<Controller
+																name={`insured_person[${index}].emergency_contact_nigeria_last_name`}
+																control={control}
+																defaultValue={''}
+																rules={{ required: 'Please enter last name' }}
+																render={({
+																	field: { ref, ...field },
+																	fieldState: { error, invalid },
+																}) => (
+																	<DefaultInput
+																		{...field}
+																		ref={ref}
+																		error={invalid}
+																		helpertext={invalid ? error.message : null}
+																		label="Last Name"
+																		type="text"
+																		required
+																	/>
+																)}
+															/>
+														</div>
+
+														<Controller
+															name={`insured_person[${index}].emergency_contact_nigeria_telephone`}
+															control={control}
+															defaultValue={''}
+															rules={{ required: 'Please enter phone number' }}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Phone Number"
+																	type="tel"
+																	required
+																/>
+															)}
+														/>
+													</div>
+												</div>
+												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
+													<Typography
+														variant="h4"
+														className="w-full text-left font-title font-medium text-xl text-blue-400">
+														Health Information
+													</Typography>
+													<div className="w-full grid grid-cols-1 gap-5">
+														<Controller
+															name={`insured_person[${index}].existing_conditions`}
+															control={control}
+															defaultValue={''}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Pre-existing Medical Conditions"
+																	type="text-area"
+																/>
+															)}
+														/>
+														<Controller
+															name={`insured_person[${index}].allergies`}
+															control={control}
+															defaultValue={''}
+															render={({
+																field: { ref, ...field },
+																fieldState: { error, invalid },
+															}) => (
+																<DefaultInput
+																	{...field}
+																	ref={ref}
+																	error={invalid}
+																	helpertext={invalid ? error.message : null}
+																	label="Allergies"
+																	type="text-area"
+																/>
+															)}
+														/>
+													</div>
+												</div>
+
+												{watch('insured_person')?.length > 1 ? (
+													<div
+														onClick={() => remove(index)}
+														className="group absolute bottom-0 right-0 flex justify-center items-center transition-all duration-150 ease-in rounded-b-md h-5 lg:h-6  md:hover:h-8 w-full bg-red-400 hover:shadow-lg hover:shadow-red-400/50 hover:bg-red-500 cursor-pointer">
+														<Typography
+															variant="paragraph"
+															color="white"
+															className="transition-all duration-150 ease-in tracking-wider group-hover:tracking-widest text-center text-sm font-bold uppercase">
+															remove
+														</Typography>
+													</div>
+												) : null}
+											</div>
+										))}
+
+										{watch('insured_person')?.length !== 5 ? (
+											<div className="w-full flex justify-end items-start">
+												<Button
+													type="button"
+													variant="text"
+													size="lg"
+													className="bg-cyan-100/20"
+													onClick={() =>
+														append({
+															first_name: '',
+															last_name: '',
+															country: watch('country'),
+															address: '',
+															postal_zip: '',
+															city: '',
+															state: '',
+														})
+													}
+													color="cyan">
+													add new
+												</Button>
+											</div>
+										) : null}
+									</section>
+
+									<section className="flex flex-col gap-10 mt-20">
+										<span className="flex flex-wrap xl:flex-nowrap justify-between items-center gap-2 xl:gap-20">
 											<Typography
 												variant="h2"
 												className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-												Insured Person
+												Applicant
 											</Typography>
-											<Typography
-												variant="paragraph"
-												className="text-sm text-gray-500">
-												You can add up to 5 people
-											</Typography>
+											<div className="w-full">
+												<Controller
+													name="applicant_type"
+													control={control}
+													render={({ field: { onChange, ref, ...field } }) => (
+														<FormControl
+															{...field}
+															ref={ref}
+															className="w-full"
+															onChange={(value) => {
+																onChange(value);
+																setApplicantType(value.target.value);
+															}}
+															name="applicant_type">
+															<List className="flex-row flex-wrap lg:flex-nowrap px-0 shadow-inner rounded-lg w-full">
+																<ListItem className="p-0">
+																	<label
+																		htmlFor="self"
+																		className="px-3 py-2 flex items-center w-full cursor-pointer">
+																		<ListItemPrefix className="mr-3">
+																			<Radio
+																				name="applicant_type"
+																				id="self"
+																				ripple={false}
+																				value="self"
+																				className="hover:before:opacity-0"
+																				containerProps={{
+																					className: 'p-0',
+																				}}
+																			/>
+																		</ListItemPrefix>
+																		<Typography
+																			color="blue-gray"
+																			className="font-medium">
+																			Self
+																		</Typography>
+																	</label>
+																</ListItem>
+																<ListItem className="p-0">
+																	<label
+																		htmlFor="other"
+																		className="px-3 py-2 flex items-center w-full cursor-pointer">
+																		<ListItemPrefix className="mr-3">
+																			<Radio
+																				name="applicant_type"
+																				id="other"
+																				defaultChecked
+																				value="other"
+																				ripple={false}
+																				className="hover:before:opacity-0"
+																				containerProps={{
+																					className: 'p-0',
+																				}}
+																			/>
+																		</ListItemPrefix>
+																		<Typography
+																			color="blue-gray"
+																			className="font-medium">
+																			Other
+																		</Typography>
+																	</label>
+																</ListItem>
+																<ListItem className="p-0">
+																	<label
+																		htmlFor="company"
+																		className="px-3 py-2 flex items-center w-full cursor-pointer">
+																		<ListItemPrefix className="mr-3">
+																			<Radio
+																				name="applicant_type"
+																				id="company"
+																				value="company"
+																				ripple={false}
+																				className="hover:before:opacity-0"
+																				containerProps={{
+																					className: 'p-0',
+																				}}
+																			/>
+																		</ListItemPrefix>
+																		<Typography
+																			color="blue-gray"
+																			className="font-medium">
+																			Company
+																		</Typography>
+																	</label>
+																</ListItem>
+															</List>
+														</FormControl>
+													)}
+												/>
+											</div>
 										</span>
+										{watch('applicant_type') === 'self' ||
+										watch('applicant_type') === 'other' ? (
+											<div className="relative w-full h-full flex flex-col gap-10 justify-center items-center rounded-md shadow-inner border-2 bg-gray-50/10 p-4 py-10">
+												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+													<Controller
+														name={`applicant[${0}].first_name`}
+														defaultValue={
+															watch('applicant_type') === 'self'
+																? watch(`insured_person[0].first_name`)
+																: ''
+														}
+														control={control}
+														rules={{ required: 'Please enter first name' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="First Name"
+																type="text"
+																required
+															/>
+														)}
+													/>
+													<Controller
+														name={`applicant[${0}].last_name`}
+														defaultValue={
+															watch('applicant_type') === 'self'
+																? watch(`insured_person[0].last_name`)
+																: ''
+														}
+														control={control}
+														rules={{ required: 'Please enter last name' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Last Name"
+																type="text"
+																required
+															/>
+														)}
+													/>
+												</div>
+
+												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+													<Controller
+														name={`applicant[${0}].telephone`}
+														defaultValue={''}
+														control={control}
+														rules={{ required: 'Please enter phone number' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Phone number"
+																type="tel"
+																required
+															/>
+														)}
+													/>
+													<Controller
+														name={`applicant[${0}].email`}
+														defaultValue={''}
+														control={control}
+														rules={{ required: 'Please enter email address' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Email"
+																type="email"
+																required
+															/>
+														)}
+													/>
+												</div>
+											</div>
+										) : (
+											<div className="relative w-full h-full flex flex-col gap-10 justify-center items-center rounded-md shadow-inner border-2 bg-gray-50/10 p-4 py-10">
+												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+													<Controller
+														name={`applicant[${0}].company_name`}
+														defaultValue={''}
+														control={control}
+														rules={{ required: 'Please enter company name' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Company Name"
+																type="text"
+																required
+															/>
+														)}
+													/>
+													<Controller
+														name={`applicant[${0}].company_address`}
+														defaultValue={''}
+														control={control}
+														rules={{ required: 'Please enter company address' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Company address"
+																type="text"
+																required
+															/>
+														)}
+													/>
+												</div>
+
+												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+													<Controller
+														name={`applicant[${0}].company_telephone`}
+														defaultValue={''}
+														control={control}
+														rules={{
+															required: 'Please enter company phone number',
+														}}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Company Phone number"
+																type="tel"
+																required
+															/>
+														)}
+													/>
+													<Controller
+														name={`applicant[${0}].company_email`}
+														defaultValue={''}
+														control={control}
+														rules={{ required: 'Please enter company email' }}
+														render={({
+															field: { ref, ...field },
+															fieldState: { error, invalid },
+														}) => (
+															<DefaultInput
+																{...field}
+																ref={ref}
+																error={invalid}
+																helpertext={invalid ? error.message : null}
+																label="Company Email"
+																type="email"
+																required
+															/>
+														)}
+													/>
+												</div>
+											</div>
+										)}
+									</section>
+								</>
+							)}
+
+							{formStep === 2 && (
+								<section className="flex flex-col gap-10">
+									<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
+										<Typography
+											variant="h2"
+											className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
+											Review and Accept Terms
+										</Typography>
+
 										<div className="w-fit flex justify-center items-center gap-5 p-3 rounded-md shadow-md">
 											<div className="flex flex-col justify-center items-start gap-2">
 												<span className="flex justify-start items-center gap-1">
@@ -389,1048 +1329,168 @@ const Form = () => {
 											</div>
 										</div>
 									</div>
-									{fields.map((inputField, index) => (
-										<div
-											key={inputField.id}
-											className="relative w-full h-full flex flex-col gap-5 justify-center items-center rounded-md shadow-inner border-2-lg bg-gray-50/10 p-4 py-10">
-											<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
-												<Typography
-													variant="h4"
-													className="w-full text-left font-title font-medium text-xl text-blue-400">
-													Personal Information
-												</Typography>
-												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-													<Controller
-														name={`insured_person[${index}].first_name`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please enter first name' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="First Name"
-																type="text"
-																required
-															/>
-														)}
-													/>
-													<Controller
-														name={`insured_person[${index}].last_name`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please enter last name' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Last Name"
-																type="text"
-																required
-															/>
-														)}
-													/>
-												</div>
 
-												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-													<Controller
-														name={`insured_person[${index}].dob`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please specify date of birth' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Date of Birth"
-																max={format(new Date(), 'yyyy-MM-dd')}
-																type="date"
-																required
-															/>
-														)}
-													/>
-
-													<Controller
-														control={control}
-														name={`insured_person[${index}].country`}
-														defaultValue={watch('country')}
-														rules={{ required: 'Please select country' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<SelectInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Country of Residence *"
-																options={countries}
-																required
-															/>
-														)}
-													/>
-												</div>
-
-												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-													<Controller
-														name={`insured_person[${index}].passport_number`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please enter passport number' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Passport Number"
-																type="text"
-																required
-															/>
-														)}
-													/>
-												</div>
-											</div>
-											<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
-												<Typography
-													variant="h4"
-													className="w-full text-left font-title font-medium text-xl text-blue-400">
-													Contact Information
-												</Typography>
-												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-													<Controller
-														name={`insured_person[${index}].email`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please enter email' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Email"
-																type="email"
-																required
-															/>
-														)}
-													/>
-													<Controller
-														name={`insured_person[${index}].telephone`}
-														control={control}
-														rules={{
-															required: 'Please enter telephone number',
-														}}
-														defaultValue={''}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Phone Number"
-																type="tel"
-																required
-															/>
-														)}
-													/>
-												</div>
-
-												<Controller
-													name={`insured_person[${index}].address`}
-													control={control}
-													defaultValue={''}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Address in Home Country"
-															type="text"
-														/>
-													)}
-												/>
-
-												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-red-100/30">
-													<Typography
-														variant="h4"
-														className="w-full text-left text-lg ">
-														<mark className="p-2 font-title font-medium rounded-md bg-red-300 text-white">
-															Emergency Contact Information
-														</mark>
-													</Typography>
-													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-														<Controller
-															name={`insured_person[${index}].emergency_contact_first_name`}
-															control={control}
-															defaultValue={''}
-															rules={{ required: 'Please enter first name' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<DefaultInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="First Name"
-																	type="text"
-																	required
-																/>
-															)}
-														/>
-														<Controller
-															name={`insured_person[${index}].emergency_contact_last_name`}
-															control={control}
-															defaultValue={''}
-															rules={{ required: 'Please enter last name' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<DefaultInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="Last Name"
-																	type="text"
-																	required
-																/>
-															)}
-														/>
-													</div>
-
-													<Controller
-														name={`insured_person[${index}].emergency_contact_address`}
-														control={control}
-														defaultValue={''}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Address"
-																type="text"
-															/>
-														)}
-													/>
-
-													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-														<Controller
-															control={control}
-															name={`insured_person[${index}].emergency_contact_country`}
-															defaultValue={watch('country')}
-															rules={{ required: 'Please select country' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<SelectInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="Country"
-																	options={countries}
-																	required
-																/>
-															)}
-														/>
-
-														<Controller
-															name={`insured_person[${index}].emergency_contact_telephone`}
-															control={control}
-															defaultValue={''}
-															rules={{ required: 'Please enter phone number' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<DefaultInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="Phone Number"
-																	type="tel"
-																	required
-																/>
-															)}
-														/>
-													</div>
-												</div>
-											</div>
-											<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
-												<Typography
-													variant="h4"
-													className="w-full text-left font-title font-medium text-xl text-blue-400">
-													Travel Information
-												</Typography>
-												<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-													<Controller
-														name={`insured_person[${index}].arrival_date`}
-														control={control}
-														defaultValue={watch('start_date')}
-														//rules={{ required: 'Date is required.' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Arrival date in Nigeria"
-																type="date"
-																labelProps={{ style: { color: '#617D8B' } }}
-																disabled
-																//required
-															/>
-														)}
-													/>
-													<Controller
-														name={`insured_person[${index}].departure_date`}
-														control={control}
-														defaultValue={watch('end_date')}
-														//rules={{ required: 'Date is required.' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Departure date from Nigeria"
-																type="date"
-																/*
-																min={watch(
-																	`insured_person[${index}].arrival_date`
-																)}
-																max={format(
-																	add(
-																		new Date(
-																			watch(
-																				`insured_person[${index}].arrival_date`
-																			)
-																		),
-																		{
-																			days: 90,
-																		}
-																	),
-																	'yyyy-MM-dd'
-																)}
-																*/
-																labelProps={{ style: { color: '#617D8B' } }}
-																disabled
-																//required
-															/>
-														)}
-													/>
-												</div>
-
-												<Controller
-													name={`insured_person[${index}].address_nigeria`}
-													control={control}
-													defaultValue={''}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Address in Nigeria"
-															type="text"
-														/>
-													)}
-												/>
-
-												<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-red-100/30">
-													<Typography
-														variant="h4"
-														className="w-full text-left text-lg ">
-														<mark className="p-2 font-title font-medium rounded-md bg-red-300 text-white">
-															Emergency Contact in Nigeria
-														</mark>
-													</Typography>
-													<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-														<Controller
-															name={`insured_person[${index}].emergency_contact_nigeria_first_name`}
-															control={control}
-															defaultValue={''}
-															rules={{ required: 'Please enter first name' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<DefaultInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="First Name"
-																	type="text"
-																	required
-																/>
-															)}
-														/>
-														<Controller
-															name={`insured_person[${index}].emergency_contact_nigeria_last_name`}
-															control={control}
-															defaultValue={''}
-															rules={{ required: 'Please enter last name' }}
-															render={({
-																field: { ref, ...field },
-																fieldState: { error, invalid },
-															}) => (
-																<DefaultInput
-																	{...field}
-																	ref={ref}
-																	error={invalid}
-																	helpertext={invalid ? error.message : null}
-																	label="Last Name"
-																	type="text"
-																	required
-																/>
-															)}
-														/>
-													</div>
-
-													<Controller
-														name={`insured_person[${index}].emergency_contact_nigeria_telephone`}
-														control={control}
-														defaultValue={''}
-														rules={{ required: 'Please enter phone number' }}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Phone Number"
-																type="tel"
-																required
-															/>
-														)}
-													/>
-												</div>
-											</div>
-											<div className="w-full h-fit p-2 gap-10 flex flex-col justify-start items-start rounded-md shadow-sm bg-blue-gray-100/30">
-												<Typography
-													variant="h4"
-													className="w-full text-left font-title font-medium text-xl text-blue-400">
-													Health Information
-												</Typography>
-												<div className="w-full grid grid-cols-1 gap-5">
-													<Controller
-														name={`insured_person[${index}].existing_conditions`}
-														control={control}
-														defaultValue={''}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Pre-existing Medical Conditions"
-																type="text-area"
-															/>
-														)}
-													/>
-													<Controller
-														name={`insured_person[${index}].allergies`}
-														control={control}
-														defaultValue={''}
-														render={({
-															field: { ref, ...field },
-															fieldState: { error, invalid },
-														}) => (
-															<DefaultInput
-																{...field}
-																ref={ref}
-																error={invalid}
-																helpertext={invalid ? error.message : null}
-																label="Allergies"
-																type="text-area"
-															/>
-														)}
-													/>
-												</div>
-											</div>
-
-											{watch('insured_person')?.length > 1 ? (
-												<div
-													onClick={() => remove(index)}
-													className="group absolute bottom-0 right-0 flex justify-center items-center transition-all duration-150 ease-in rounded-b-md h-5 lg:h-6  md:hover:h-8 w-full bg-red-400 hover:shadow-lg hover:shadow-red-400/50 hover:bg-red-500 cursor-pointer">
-													<Typography
-														variant="paragraph"
-														color="white"
-														className="transition-all duration-150 ease-in tracking-wider group-hover:tracking-widest text-center text-sm font-bold uppercase">
-														remove
-													</Typography>
-												</div>
-											) : null}
-										</div>
-									))}
-
-									{watch('insured_person')?.length !== 5 ? (
-										<div className="w-full flex justify-end items-start">
-											<Button
-												type="button"
-												variant="text"
-												size="lg"
-												className="bg-cyan-100/20"
-												onClick={() =>
-													append({
-														first_name: '',
-														last_name: '',
-														country: watch('country'),
-														address: '',
-														postal_zip: '',
-														city: '',
-														state: '',
-													})
-												}
-												color="cyan">
-												add new
-											</Button>
-										</div>
-									) : null}
-								</section>
-
-								<section className="flex flex-col gap-10 mt-20">
-									<span className="flex flex-wrap xl:flex-nowrap justify-between items-center gap-2 xl:gap-20">
-										<Typography
-											variant="h2"
-											className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-											Applicant
-										</Typography>
-										<div className="w-full">
-											<Controller
-												name="applicant_type"
-												control={control}
-												render={({ field: { onChange, ref, ...field } }) => (
-													<FormControl
-														{...field}
-														ref={ref}
-														className="w-full"
-														onChange={(value) => {
-															onChange(value);
-															setApplicantType(value.target.value);
-														}}
-														name="applicant_type">
-														<List className="flex-row flex-wrap lg:flex-nowrap px-0 shadow-inner rounded-lg w-full">
-															<ListItem className="p-0">
-																<label
-																	htmlFor="self"
-																	className="px-3 py-2 flex items-center w-full cursor-pointer">
-																	<ListItemPrefix className="mr-3">
-																		<Radio
-																			name="applicant_type"
-																			id="self"
-																			ripple={false}
-																			value="self"
-																			className="hover:before:opacity-0"
-																			containerProps={{
-																				className: 'p-0',
-																			}}
-																		/>
-																	</ListItemPrefix>
-																	<Typography
-																		color="blue-gray"
-																		className="font-medium">
-																		Self
-																	</Typography>
-																</label>
-															</ListItem>
-															<ListItem className="p-0">
-																<label
-																	htmlFor="other"
-																	className="px-3 py-2 flex items-center w-full cursor-pointer">
-																	<ListItemPrefix className="mr-3">
-																		<Radio
-																			name="applicant_type"
-																			id="other"
-																			defaultChecked
-																			value="other"
-																			ripple={false}
-																			className="hover:before:opacity-0"
-																			containerProps={{
-																				className: 'p-0',
-																			}}
-																		/>
-																	</ListItemPrefix>
-																	<Typography
-																		color="blue-gray"
-																		className="font-medium">
-																		Other
-																	</Typography>
-																</label>
-															</ListItem>
-															<ListItem className="p-0">
-																<label
-																	htmlFor="company"
-																	className="px-3 py-2 flex items-center w-full cursor-pointer">
-																	<ListItemPrefix className="mr-3">
-																		<Radio
-																			name="applicant_type"
-																			id="company"
-																			value="company"
-																			ripple={false}
-																			className="hover:before:opacity-0"
-																			containerProps={{
-																				className: 'p-0',
-																			}}
-																		/>
-																	</ListItemPrefix>
-																	<Typography
-																		color="blue-gray"
-																		className="font-medium">
-																		Company
-																	</Typography>
-																</label>
-															</ListItem>
-														</List>
-													</FormControl>
-												)}
-											/>
-										</div>
-									</span>
-									{watch('applicant_type') === 'self' ||
-									watch('applicant_type') === 'other' ? (
-										<div className="relative w-full h-full flex flex-col gap-10 justify-center items-center rounded-md shadow-inner border-2 bg-gray-50/10 p-4 py-10">
-											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-												<Controller
-													name={`applicant[${0}].first_name`}
-													defaultValue={
-														watch('applicant_type') === 'self'
-															? watch(`insured_person[0].first_name`)
-															: ''
-													}
-													control={control}
-													rules={{ required: 'Please enter first name' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="First Name"
-															type="text"
-															required
-														/>
-													)}
-												/>
-												<Controller
-													name={`applicant[${0}].last_name`}
-													defaultValue={
-														watch('applicant_type') === 'self'
-															? watch(`insured_person[0].last_name`)
-															: ''
-													}
-													control={control}
-													rules={{ required: 'Please enter last name' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Last Name"
-															type="text"
-															required
-														/>
-													)}
-												/>
-											</div>
-
-											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-												<Controller
-													name={`applicant[${0}].telephone`}
-													defaultValue={''}
-													control={control}
-													rules={{ required: 'Please enter phone number' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Phone number"
-															type="tel"
-															required
-														/>
-													)}
-												/>
-												<Controller
-													name={`applicant[${0}].email`}
-													defaultValue={''}
-													control={control}
-													rules={{ required: 'Please enter email address' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Email"
-															type="email"
-															required
-														/>
-													)}
-												/>
-											</div>
-										</div>
-									) : (
-										<div className="relative w-full h-full flex flex-col gap-10 justify-center items-center rounded-md shadow-inner border-2 bg-gray-50/10 p-4 py-10">
-											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-												<Controller
-													name={`applicant[${0}].company_name`}
-													defaultValue={''}
-													control={control}
-													rules={{ required: 'Please enter company name' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Company Name"
-															type="text"
-															required
-														/>
-													)}
-												/>
-												<Controller
-													name={`applicant[${0}].company_address`}
-													defaultValue={''}
-													control={control}
-													rules={{ required: 'Please enter company address' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Company address"
-															type="text"
-															required
-														/>
-													)}
-												/>
-											</div>
-
-											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-												<Controller
-													name={`applicant[${0}].company_telephone`}
-													defaultValue={''}
-													control={control}
-													rules={{
-														required: 'Please enter company phone number',
-													}}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Company Phone number"
-															type="tel"
-															required
-														/>
-													)}
-												/>
-												<Controller
-													name={`applicant[${0}].company_email`}
-													defaultValue={''}
-													control={control}
-													rules={{ required: 'Please enter company email' }}
-													render={({
-														field: { ref, ...field },
-														fieldState: { error, invalid },
-													}) => (
-														<DefaultInput
-															{...field}
-															ref={ref}
-															error={invalid}
-															helpertext={invalid ? error.message : null}
-															label="Company Email"
-															type="email"
-															required
-														/>
-													)}
-												/>
-											</div>
-										</div>
-									)}
-								</section>
-							</>
-						)}
-
-						{formStep === 2 && (
-							<section className="flex flex-col gap-10">
-								<div className="w-full flex flex-wrap-reverse gap-3 justify-between items-center">
-									<Typography
-										variant="h2"
-										className="font-title font-medium text-4xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-										Review and Accept Terms
-									</Typography>
-
-									<div className="w-fit flex justify-center items-center gap-5 p-3 rounded-md shadow-md">
-										<div className="flex flex-col justify-center items-start gap-2">
-											<span className="flex justify-start items-center gap-1">
-												<BiTime className="text-lg text-gray-700" />
-												<Typography className="capitalize font-normal text-xs text-gray-700 border-b-2 border-blue-400">
-													Duration
-												</Typography>
-											</span>
-											<Typography>
-												{basicData &&
-													differenceInDays(
-														new Date(basicData.end_date),
-														new Date(basicData.start_date)
-													)}{' '}
-												Days
+									<div className="flex flex-col gap-8">
+										<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
+											<Typography variant="h4" className="text-blue-400">
+												Insured Person Details
 											</Typography>
-										</div>
-										<div className="flex flex-col justify-center items-start gap-2">
-											<span className="flex justify-start items-center gap-1">
-												<BsGlobeEuropeAfrica className="text-lg text-gray-700" />
-												<Typography className="capitalize font-normal text-xs text-gray-700 border-b-2 border-blue-400">
-													Country of Residence
-												</Typography>
-											</span>
-											<Typography>{watch('country')} </Typography>
-										</div>
-									</div>
-								</div>
 
-								<div className="flex flex-col gap-8">
-									<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
-										<Typography variant="h4" className="text-blue-400">
-											Insured Person Details
-										</Typography>
-
-										{watch(`insured_person`).map((person, index) => (
-											<Accordion
-												animate={customAnimation}
-												key={index}
-												icon={<Icon id={index + 1} open={open} />}
-												open={open === index + 1}
-												className="border border-blue-gray-100 px-4 rounded-lg mb-2">
-												<AccordionHeader
-													onClick={() => handleOpen(index + 1)}
-													className={`border-b-0 transition-colors font-semibold font-title text-base ${
-														open === index + 1
-															? 'text-blue-500 hover:!text-blue-700'
-															: ''
-													}`}>
-													Person {index + 1}
-												</AccordionHeader>
-												<AccordionBody className="text-base font-normal pt-0">
-													<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 rounded-md p-3 shadow-sm bg-white/50">
-														{REVIEW_DATA.map(({ name, key }, index) => (
-															<div
-																className={person[key] ? 'block' : 'hidden'}
-																key={index}>
-																<Typography
-																	variant="paragraph"
-																	className="capitalize font-normal text-xs text-gray-500">
-																	{name}
-																</Typography>
-																<Typography
-																	variant="h6"
-																	className="font-medium text-lg">
-																	{person[key]}
-																</Typography>
-															</div>
-														))}
-													</div>
-												</AccordionBody>
-											</Accordion>
-										))}
-									</div>
-
-									<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
-										<Typography variant="h4" className="text-blue-300">
-											Applicant Details
-										</Typography>
-										<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
-											{REVIEW_DATA.map(({ name, key }, index) => (
-												<div
+											{watch(`insured_person`).map((person, index) => (
+												<Accordion
+													animate={customAnimation}
 													key={index}
-													className={
-														watch(`applicant[${0}].${key}`) ? 'block' : 'hidden'
-													}>
-													<Typography
-														variant="paragraph"
-														className="capitalize font-normal text-xs text-gray-500">
-														{name}
-													</Typography>
-													<Typography
-														variant="h6"
-														className="font-medium text-lg">
-														{watch(`applicant[${0}].${key}`)}
-													</Typography>
-												</div>
+													icon={<Icon id={index + 1} open={open} />}
+													open={open === index + 1}
+													className="border border-blue-gray-100 px-4 rounded-lg mb-2">
+													<AccordionHeader
+														onClick={() => handleOpen(index + 1)}
+														className={`border-b-0 transition-colors font-semibold font-title text-base ${
+															open === index + 1
+																? 'text-blue-500 hover:!text-blue-700'
+																: ''
+														}`}>
+														Person {index + 1}
+													</AccordionHeader>
+													<AccordionBody className="text-base font-normal pt-0">
+														<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 rounded-md p-3 shadow-sm bg-white/50">
+															{REVIEW_DATA.map(({ name, key }, index) => (
+																<div
+																	className={person[key] ? 'block' : 'hidden'}
+																	key={index}>
+																	<Typography
+																		variant="paragraph"
+																		className="capitalize font-normal text-xs text-gray-500">
+																		{name}
+																	</Typography>
+																	<Typography
+																		variant="h6"
+																		className="font-medium text-lg">
+																		{person[key]}
+																	</Typography>
+																</div>
+															))}
+														</div>
+													</AccordionBody>
+												</Accordion>
 											))}
 										</div>
-									</div>
-								</div>
 
-								<div className="block ">
-									<Controller
-										control={control}
-										name={'terms_and_conditions'}
-										rules={{ required: 'Please accept terms and conditions' }}
-										render={({
-											field: { ref, ...field },
-											fieldState: { error, invalid },
-										}) => (
-											<>
-												<FormControlLabel
-													control={
-														<Checkbox
-															{...field}
-															ref={ref}
-															color="blue"
-															checked={watch(`terms_and_conditions`)}
-														/>
-													}
-													label={'I accept the terms and conditions'}
-												/>
-												<FormHelperText error>
-													{invalid ? error.message : null}
-												</FormHelperText>
-											</>
-										)}
-									/>
-								</div>
-
-								<div className="w-full flex items-center justify-between gap-5 p-3 rounded-md shadow-md">
-									<div className="flex flex-col justify-center items-start gap-1">
-										<Typography className="capitalize font-normal text-sm text-gray-700 border-b-2 border-blue-400">
-											Basic Plan
-										</Typography>
-										{basicData &&
-										differenceInDays(
-											new Date(basicData.end_date),
-											new Date(basicData.start_date)
-										) <= '30' ? (
-											<Typography className="text-lg">
-												{Intl.NumberFormat('en-US', {
-													style: 'currency',
-													currency: 'USD',
-												}).format(45)}{' '}
-												per insured person x {watch('insured_person').length}
+										<div className="w-full flex flex-col justify-center items-start gap-6 rounded-md bg-blue-gray-100/10 shadow-inner p-3">
+											<Typography variant="h4" className="text-blue-300">
+												Applicant Details
 											</Typography>
-										) : (
-											<Typography className="text-lg">
-												{Intl.NumberFormat('en-US', {
-													style: 'currency',
-													currency: 'USD',
-												}).format(80)}{' '}
-												per insured person x {watch('insured_person').length}
-											</Typography>
-										)}
+											<div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
+												{REVIEW_DATA.map(({ name, key }, index) => (
+													<div
+														key={index}
+														className={
+															watch(`applicant[${0}].${key}`)
+																? 'block'
+																: 'hidden'
+														}>
+														<Typography
+															variant="paragraph"
+															className="capitalize font-normal text-xs text-gray-500">
+															{name}
+														</Typography>
+														<Typography
+															variant="h6"
+															className="font-medium text-lg">
+															{watch(`applicant[${0}].${key}`)}
+														</Typography>
+													</div>
+												))}
+											</div>
+										</div>
 									</div>
 
-									<div className="flex flex-col justify-center items-start gap-1">
-										<Typography className="capitalize font-normal text-sm text-gray-700 border-b-2 border-blue-400">
-											Total
-										</Typography>
-										{basicData &&
-										differenceInDays(
-											new Date(basicData.end_date),
-											new Date(basicData.start_date)
-										) <= '30' ? (
-											<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-												{Intl.NumberFormat('en-US', {
-													style: 'currency',
-													currency: 'USD',
-												}).format(45 * watch('insured_person').length)}
-											</Typography>
-										) : (
-											<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
-												{Intl.NumberFormat('en-US', {
-													style: 'currency',
-													currency: 'USD',
-												}).format(80 * watch('insured_person').length)}
-											</Typography>
-										)}
+									<div className="block ">
+										<Controller
+											control={control}
+											name={'terms_and_conditions'}
+											rules={{ required: 'Please accept terms and conditions' }}
+											render={({
+												field: { ref, ...field },
+												fieldState: { error, invalid },
+											}) => (
+												<>
+													<FormControlLabel
+														control={
+															<Checkbox
+																{...field}
+																ref={ref}
+																color="blue"
+																checked={watch(`terms_and_conditions`)}
+															/>
+														}
+														label={'I accept the terms and conditions'}
+													/>
+													<FormHelperText error>
+														{invalid ? error.message : null}
+													</FormHelperText>
+												</>
+											)}
+										/>
 									</div>
-								</div>
-							</section>
-						)}
 
-						{formStep === 3 && (
+									<div className="w-full flex items-center justify-between gap-5 p-3 rounded-md shadow-md">
+										<div className="flex flex-col justify-center items-start gap-1">
+											<Typography className="capitalize font-normal text-sm text-gray-700 border-b-2 border-blue-400">
+												Basic Plan
+											</Typography>
+											{basicData &&
+											differenceInDays(
+												new Date(basicData.end_date),
+												new Date(basicData.start_date)
+											) <= '30' ? (
+												<Typography className="text-lg">
+													{Intl.NumberFormat('en-US', {
+														style: 'currency',
+														currency: 'USD',
+													}).format(45)}{' '}
+													per insured person x {watch('insured_person').length}
+												</Typography>
+											) : (
+												<Typography className="text-lg">
+													{Intl.NumberFormat('en-US', {
+														style: 'currency',
+														currency: 'USD',
+													}).format(80)}{' '}
+													per insured person x {watch('insured_person').length}
+												</Typography>
+											)}
+										</div>
+
+										<div className="flex flex-col justify-center items-start gap-1">
+											<Typography className="capitalize font-normal text-sm text-gray-700 border-b-2 border-blue-400">
+												Total
+											</Typography>
+											{basicData &&
+											differenceInDays(
+												new Date(basicData.end_date),
+												new Date(basicData.start_date)
+											) <= '30' ? (
+												<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
+													{Intl.NumberFormat('en-US', {
+														style: 'currency',
+														currency: 'USD',
+													}).format(45 * watch('insured_person').length)}
+												</Typography>
+											) : (
+												<Typography className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r to-green-600 from-blue-400">
+													{Intl.NumberFormat('en-US', {
+														style: 'currency',
+														currency: 'USD',
+													}).format(80 * watch('insured_person').length)}
+												</Typography>
+											)}
+										</div>
+									</div>
+								</section>
+							)}
+
+							{/* formStep === 3 && (
 							<section className="flex flex-col gap-10">
 								<Typography
 									variant="h2"
@@ -1530,10 +1590,15 @@ const Form = () => {
 									/>
 								</div>
 							</section>
-						)}
+										) */}
 
-						{renderButton()}
-					</form>
+							{renderButton()}
+						</form>
+					) : (
+						<div className="w-full h-full flex justify-center items-center">
+							<Spinner className="h-32 w-32" />
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
