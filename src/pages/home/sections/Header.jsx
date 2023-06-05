@@ -3,8 +3,8 @@ import React from 'react';
 
 const Header = () => {
 	return (
-		<div className="overflow-hidden relative w-full h-full flex flex-col gap-5 justify-center items-start  px-10 lg:pl-10">
-			<span className="w-fit relative flex justify-center items-end gap-1">
+		<div className="lg:overflow-hidden relative w-full h-full flex flex-col gap-5 justify-start lg:justify-center items-start  px-10 lg:pl-10">
+			<span className="w-fit relative">
 				<Typography
 					variant="h1"
 					className="font-title font-semibold text-4xl md:text-7xl w-full text-center lg:text-left z-20 text-gray-900 flex justify-center items-end gap-1">
