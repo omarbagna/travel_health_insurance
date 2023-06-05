@@ -360,7 +360,7 @@ const Form = () => {
 
 	const paymentRequest = async (data) => {
 		const { data: response } = await axios.post(
-			'https://lab.rxhealthbeta.com/jimmy/ng-pay/checkout.php',
+			'https://goldenpartnershipplatform.org/ng-pay/checkout.php',
 			data,
 			{
 				headers: { 'Content-Type': 'application/json' },
