@@ -44,7 +44,7 @@ export default function NavBar() {
 									fill="none"
 									className="h-6 w-6"
 									viewBox="0 0 24 24"
-									stroke="currentColor"
+									stroke="#1c1c1c"
 									strokeWidth={2}>
 									<path
 										strokeLinecap="round"
@@ -57,7 +57,7 @@ export default function NavBar() {
 									xmlns="http://www.w3.org/2000/svg"
 									className="h-6 w-6"
 									fill="none"
-									stroke="currentColor"
+									stroke="#1c1c1c"
 									strokeWidth={2}>
 									<path
 										strokeLinecap="round"

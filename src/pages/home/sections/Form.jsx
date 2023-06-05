@@ -29,7 +29,7 @@ const Form = () => {
 	};
 
 	return (
-		<div className="w-full h-full flex flex-col justify-center items-center mt-20">
+		<div className="w-full h-full flex flex-col justify-center items-center mt-20 z-20">
 			<div className="w-2/3 rounded-lg shadow-2xl bg-white/80 backdrop-blur-sm mx-auto">
 				<div className="px-8 py-10">
 					<form onSubmit={handleSubmit(submitForm)}>
@@ -40,48 +40,60 @@ const Form = () => {
 								{' '}
 								Get insured today!
 							</Typography>
-							<div className="w-full flex justify-center items-center gap-4">
-								<Controller
-									name="start_date"
-									control={control}
-									rules={{ required: 'Date is required.' }}
-									render={({
-										field: { ref, ...field },
-										fieldState: { error, invalid },
-									}) => (
-										<DefaultInput
-											{...field}
-											ref={ref}
-											error={invalid}
-											helpertext={invalid ? error.message : null}
-											label="Start Date"
-											type="date"
-											min={format(new Date(), 'yyyy-MM-dd')}
-											required
-										/>
-									)}
-								/>
-								<Controller
-									name="end_date"
-									control={control}
-									rules={{ required: 'Date is required.' }}
-									render={({
-										field: { ref, ...field },
-										fieldState: { error, invalid },
-									}) => (
-										<DefaultInput
-											{...field}
-											ref={ref}
-											error={invalid}
-											helpertext={invalid ? error.message : null}
-											label="End Date"
-											type="date"
-											min={watch('start_date')}
-											max={format(add(new Date(), { days: 90 }), 'yyyy-MM-dd')}
-											required
-										/>
-									)}
-								/>
+							<div className="flex flex-col justify-start items-start gap-2">
+								<div className="w-full flex flex-wrap md:flex-nowrap justify-center items-center gap-4">
+									<Controller
+										name="start_date"
+										control={control}
+										rules={{ required: 'Date is required.' }}
+										render={({
+											field: { ref, ...field },
+											fieldState: { error, invalid },
+										}) => (
+											<DefaultInput
+												{...field}
+												ref={ref}
+												error={invalid}
+												helpertext={invalid ? error.message : null}
+												label="Arrival date in Nigeria"
+												type="date"
+												min={format(new Date(), 'yyyy-MM-dd')}
+												required
+											/>
+										)}
+									/>
+									<Controller
+										name="end_date"
+										control={control}
+										rules={{ required: 'Date is required.' }}
+										render={({
+											field: { ref, ...field },
+											fieldState: { error, invalid },
+										}) => (
+											<DefaultInput
+												{...field}
+												ref={ref}
+												error={invalid}
+												helpertext={invalid ? error.message : null}
+												label="Departure date from Nigeria"
+												type="date"
+												min={watch('start_date')}
+												max={format(
+													add(new Date(watch('start_date')), { days: 90 }),
+													'yyyy-MM-dd'
+												)}
+												required
+											/>
+										)}
+									/>
+								</div>
+
+								<Typography
+									variant="small"
+									className="font-body font-light text-xs text-gray-500">
+									<strong>NB:</strong> Arrival to departure dates must be within
+									90 days
+								</Typography>
 							</div>
 
 							<Controller
