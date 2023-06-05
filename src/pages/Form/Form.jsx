@@ -5,6 +5,9 @@ import SelectInput from '../../components/Input/SelectInput';
 import { format, differenceInDays } from 'date-fns';
 import { countries } from '../../data/countriesData';
 import {
+	Accordion,
+	AccordionBody,
+	AccordionHeader,
 	Button,
 	Checkbox,
 	List,
@@ -138,11 +141,28 @@ function formatCardNumber(value) {
 	}
 }
 
+function Icon({ id, open }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className={`${
+				id === open ? 'rotate-180' : ''
+			} h-5 w-5 transition-transform`}
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth={2}>
+			<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+		</svg>
+	);
+}
+
 const Form = () => {
 	const [formStep, setFormStep] = useState(1);
 	const [applicantType, setApplicantType] = useState('other');
 	const [cardNumber, setCardNumber] = useState('');
 	const [basicData, setBasicData] = useState(null);
+	const [open, setOpen] = useState(1);
 
 	useEffect(() => {
 		const data = window.localStorage.getItem('basicData');
@@ -299,6 +319,14 @@ const Form = () => {
 				</div>
 			);
 		}
+	};
+
+	const handleOpen = (value) => {
+		setOpen(open === value ? 0 : value);
+	};
+	const customAnimation = {
+		mount: { scale: 1 },
+		unmount: { scale: 0.9 },
 	};
 
 	const submitForm = (data) => {
@@ -1251,26 +1279,42 @@ const Form = () => {
 										</Typography>
 
 										{watch(`insured_person`).map((person, index) => (
-											<div
+											<Accordion
+												animate={customAnimation}
 												key={index}
-												className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 rounded-md p-3 shadow-md bg-white/50">
-												{REVIEW_DATA.map(({ name, key }, index) => (
-													<div
-														className={person[key] ? 'block' : 'hidden'}
-														key={index}>
-														<Typography
-															variant="paragraph"
-															className="capitalize font-normal text-xs text-gray-500">
-															{name}
-														</Typography>
-														<Typography
-															variant="h6"
-															className="font-medium text-lg">
-															{person[key]}
-														</Typography>
+												icon={<Icon id={index + 1} open={open} />}
+												open={open === index + 1}
+												className="border border-blue-gray-100 px-4 rounded-lg mb-2">
+												<AccordionHeader
+													onClick={() => handleOpen(index + 1)}
+													className={`border-b-0 transition-colors font-semibold font-title text-base ${
+														open === index + 1
+															? 'text-blue-500 hover:!text-blue-700'
+															: ''
+													}`}>
+													Person {index + 1}
+												</AccordionHeader>
+												<AccordionBody className="text-base font-normal pt-0">
+													<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 rounded-md p-3 shadow-sm bg-white/50">
+														{REVIEW_DATA.map(({ name, key }, index) => (
+															<div
+																className={person[key] ? 'block' : 'hidden'}
+																key={index}>
+																<Typography
+																	variant="paragraph"
+																	className="capitalize font-normal text-xs text-gray-500">
+																	{name}
+																</Typography>
+																<Typography
+																	variant="h6"
+																	className="font-medium text-lg">
+																	{person[key]}
+																</Typography>
+															</div>
+														))}
 													</div>
-												))}
-											</div>
+												</AccordionBody>
+											</Accordion>
 										))}
 									</div>
 
